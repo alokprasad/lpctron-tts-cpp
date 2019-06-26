@@ -26,11 +26,11 @@ bash split_merge - > generates inference_model.pb
 COmpilation of this projects requires compiling tensorflow from source as it uses some headers files that are generated 
 during compilation of tensorflow ( bazel compilation)
 
-*  Install  Bazel 0.21 ( Not version above that)
+*  Install  Bazel 0.24 
 
 ```
-wget https://github.com/bazelbuild/bazel/releases/download/0.21.0/bazel-0.21.0-installer-linux-x86_64.sh
-bash bazel-0.21.0-installer-linux-x86_64.sh
+wget https://github.com/bazelbuild/bazel/releases/download/0.24.0/bazel-0.24.0-installer-linux-x86_64.sh
+bash bazel-0.24.0-installer-linux-x86_64.sh
 ```
 
 *  Install Tensorflow
@@ -91,3 +91,7 @@ https://gist.github.com/EKami/9869ae6347f68c592c5b5cd181a3b205 ( For ARM Linux)
 https://www.pytorials.com/how-to-install-tensorflow-gpu-with-cuda-10-0-for-python-on-ubuntu/2/
 
 https://medium.com/@sometimescasey/building-tensorflow-from-source-for-sse-avx-fma-instructions-worth-the-effort-fbda4e30eec3
+
+The major revision of the Android NDK referenced by android_ndk_repository rule 'androidndk' is 19. The major revisions supported by Bazel are [10, 11, 12, 13, 14, 15, 16, 17, 18]. Bazel will attempt to treat the NDK as if it was r18. This may cause compilation and linkage problems. Please download a supported NDK version.
+
+
