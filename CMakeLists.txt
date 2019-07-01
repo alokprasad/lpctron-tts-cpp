@@ -1,27 +1,22 @@
-cmake_minimum_required(VERSION 3.10.2)
 
-set (TENSORFLOW_HOME_DIR /media/alok/ws/experiments/tensorflow-1.13.1)
+##LINUX
+#Build just change require CMakeLists*.txt file in include and use cmake .. and make from build.
+#TF git rev-parse HEAD - > 70be2de5dd7743a571fffc6a2cbc2905bd18063a 
+#But it was buit using 19c 
+#sudo apt-get install autoconf automake libtool curl make g++ unzip zlib1g-dev git python
+#tensorflow/contrib/makefile/build_all_linux.sh
+#git clone https://github.com/tensorflow/tensorflow.git
+#cd tensorflow
+#git checkout -b r1.14
+#git pull
+#tensorflow/contrib/makefile/build_all_linux.sh
 
-find_library(TENSORFLOW_CC_LIBRARY tensorflow_cc HINTS ${TENSORFLOW_HOME_DIR}/bazel-bin/tensorflow)
-find_library(TENSORFLOW_FRAMEWORK_LIBRARY tensorflow_framework HINTS ${TENSORFLOW_HOME_DIR}/bazel-bin/tensorflow)
+##ANDROID
 
-add_subdirectory(lpcnet)
+# ANdroid - Compile Tensorflow with ndk14b ( dockerfile ) and TTS with NDK15b 
+# #cmake -DCMAKE_TOOLCHAIN_FILE=${NDK_ROOT}/build/cmake/android.toolchain.cmake     -DANDROID_ABI=arm64-v8a   -DTARGET_PLATFORM=android -DTARGET_ARCHITECTURE=arm64 -DNDK_PATH=${NDK_ROOT} ..
+# tensorflow 1.13 compiled with ndk14b ( check docker file , grep ANDROID_NDK_FILENAME) and tts with ndk15b
 
-add_executable(lpctron_cc src/main.cc)
-
-#set (CMAKE_C_FLAGS "-Wall -W -Wextra -Wno-unused-function  -mavx2 -mfma  -O3 -DTACOTRON2")
-#set (CMAKE_CXX_FLAGS "-Wall -W -Wextra -Wno-unused-function  -mavx2 -mfma  -O3 -DTACOTRON2")
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
-add_definitions(-D_GLIBCXX_USE_CXX11_ABI=0)
-
-target_link_libraries(lpctron_cc 
-  ${TENSORFLOW_CC_LIBRARY}
-  ${TENSORFLOW_FRAMEWORK_LIBRARY}
-  lpcnet)
-
-target_include_directories(lpctron_cc PRIVATE 
-  ${TENSORFLOW_HOME_DIR}
-  ${TENSORFLOW_HOME_DIR}/bazel-genfiles
-  ${TENSORFLOW_HOME_DIR}/bazel-tensorflow-1.13.1/external/eigen_archive
-  ${TENSORFLOW_HOME_DIR}/bazel-tensorflow-1.13.1/external/protobuf_archive/src
-  ${TENSORFLOW_HOME_DIR}/bazel-tensorflow-1.13.1/external/nsync/public)
+cmake_minimum_required(VERSION 3.10)
+#include(CMakeLists-static-linux.txt)
+include(CMakeLists-static-android.txt)

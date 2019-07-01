@@ -1,0 +1,61 @@
+cmake_minimum_required(VERSION 3.5.1)
+
+
+SET(TF_DIR /home/nuc2/alok/tf-static-linux/tensorflow)
+
+SET(TENSORFLOW_MAKEFILE_DIR ${TF_DIR}/tensorflow/contrib/makefile)
+
+SET(NSYNC_LIB ${TENSORFLOW_MAKEFILE_DIR}/downloads/nsync/builds/default.linux.c++11/nsync.a)
+SET(PROTOBUF_LIB ${TENSORFLOW_MAKEFILE_DIR}/gen/protobuf/lib/libprotobuf.a)
+SET(TENSORFLOW_CORE_LIB -Wl,--whole-archive ${TF_DIR}/tensorflow/contrib/makefile/gen/lib/libtensorflow-core.a -Wl,--no-whole-archive)
+
+
+INCLUDE_DIRECTORIES(${TF_DIR})
+INCLUDE_DIRECTORIES(${TF_DIR}/tensorflow/contrib/makefile/gen/proto)
+INCLUDE_DIRECTORIES(${TF_DIR}/tensorflow/contrib/makefile/downloads/eigen)
+INCLUDE_DIRECTORIES(${TF_DIR}/tensorflow/contrib/makefile/downloads/absl)
+INCLUDE_DIRECTORIES(${TF_DIR}/tensorflow/contrib/makefile/downloads/nsync/public)
+INCLUDE_DIRECTORIES(${TF_DIR}/tensorflow/contrib/makefile/gen/protobuf/include)
+
+
+#INCLUDE_DIRECTORIES(${TF_DIR})
+#INCLUDE_DIRECTORIES(${TF_DIR}/tensorflow/contrib/makefile/gen/proto)
+#INCLUDE_DIRECTORIES(${TF_DIR}/tensorflow/contrib/makefile/downloads/eigen)
+#INCLUDE_DIRECTORIES(${TF_DIR}/tensorflow/contrib/makefile/downloads/absl)
+#INCLUDE_DIRECTORIES(${TF_DIR}/tensorflow/contrib/makefile/downloads/nsync/public)
+#INCLUDE_DIRECTORIES(${TF_DIR}/tensorflow/contrib/makefile/gen/protobuf/include)
+
+SET(TF_LIBRARIES
+    ${TENSORFLOW_CORE_LIB}
+    ${NSYNC_LIB}
+    ${PROTOBUF_LIB}
+    pthread
+    dl
+)
+
+SET(LDFLAGS "-std=c++11 -msse4.1 -fPIC -O3 -march=native -Wall -finline-functions")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}${LDFLAGS}")
+#TARGET_LINK_LIBRARIES(hello-tf-inference ${TF_LIBRARIES} ${CMAKE_CXX_FLAGS})
+
+add_subdirectory(lpcnet)
+add_executable(lpctron_cc src/main.cc)
+
+#set (CMAKE_C_FLAGS "-Wall -W -Wextra -Wno-unused-function  -mavx2 -mfma  -O3 -DTACOTRON2")
+#set (CMAKE_CXX_FLAGS "-Wall -W -Wextra -Wno-unused-function  -mavx2 -mfma  -O3 -DTACOTRON2")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
+
+target_link_libraries(lpctron_cc 
+  ${TF_LIBRARIES}
+  lpcnet)
+
+
+target_include_directories(lpctron_cc PRIVATE 
+${TF_DIR}
+${TF_DIR}/tensorflow/contrib/makefile/gen/proto
+${TF_DIR}/tensorflow/contrib/makefile/downloads/eigen
+${TF_DIR}/tensorflow/contrib/makefile/downloads/absl
+${TF_DIR}/tensorflow/contrib/makefile/downloads/nsync/public
+${TF_DIR}/tensorflow/contrib/makefile/gen/protobuf/include
+${TF_DIR}/tensorflow/contrib/makefile/gen/protobuf_android/arm64-v8a/include
+)
+

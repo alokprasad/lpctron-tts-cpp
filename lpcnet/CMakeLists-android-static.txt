@@ -1,0 +1,31 @@
+cmake_minimum_required(VERSION 3.5.1)
+
+add_library(lpcnet STATIC
+  src/lpcnet.c
+  src/lpcnet_interface.c
+  src/nnet.c 
+  src/nnet_data.c 
+  src/freq.c
+  src/kiss_fft.c 
+  src/pitch.c
+  src/celt_lpc.c)
+
+
+target_include_directories(lpcnet 
+PRIVATE include interface
+INTERFACE interface)
+
+#set (CMAKE_C_FLAGS "-Wall -W -Wextra -fomit-frame-pointer -Wno-unused-function -ffast-math  -march=armv8-a -mtune=cortex-a53  -O3 -DTACOTRON2")
+#set (CMAKE_CXX_FLAGS "-Wall -W -Wextra -fomit-frame-pointer -Wno-unused-function -ffast-math  -march=armv8-a -mtune=cortex-a53  -O3 -DTACOTRON2")
+
+set (CMAKE_C_FLAGS "-Wall -W -Wextra -fomit-frame-pointer -Wno-unused-function -ffast-math  -march=armv8-a -mtune=cortex-a53  -O3 -DTACOTRON2 -finline-functions")
+set (CMAKE_CXX_FLAGS "-Wall -W -Wextra -fomit-frame-pointer -Wno-unused-function -ffast-math  -march=armv8-a -mtune=cortex-a53  -O3 -DTACOTRON2 -finline-functions")
+
+#set (CMAKE_CXX_FLAGS "-Wall -W -Wextra -Wno-unused-function  -mavx2 -mfma  -O3 -DTACOTRON2")
+#set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
+#add_definitions(-D_GLIBCXX_USE_CXX11_ABI=0)
+#add_definitions(-D__ARM_NEON__)
+
+target_compile_definitions(lpcnet PRIVATE TACOTRON2)
+
+target_link_libraries(lpcnet m)

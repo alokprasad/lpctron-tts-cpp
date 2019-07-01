@@ -41,16 +41,13 @@
 
 #define SOFTMAX_HACK
 
-#include "vec_avx.h"
-#if 0
 #ifdef __AVX__
-//#include "vec_avx.h"
+#include "vec_avx.h"
 #elif __ARM_NEON__
 #include "vec_neon.h"
 #else
 #warning Compiling without any vectorization. This code will be very slow
 #include "vec.h"
-#endif
 #endif
 
 static OPUS_INLINE float relu(float x)

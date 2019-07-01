@@ -1,0 +1,82 @@
+#export NDK_ROOT=/opt/android-ndk-r15b
+#cmake -DCMAKE_TOOLCHAIN_FILE=${NDK_ROOT}/build/cmake/android.toolchain.cmake     -DANDROID_ABI=arm64-v8a   -DTARGET_PLATFORM=android -DTARGET_ARCHITECTURE=arm64 -DNDK_PATH=${NDK_ROOT} ..
+#(tensorflow r1.13 compiled with ndk-r14b)
+#./tensorflow/contrib/makefile/gen/protobuf_android/arm64-v8a/lib/libprotobuf.a
+#./tensorflow/contrib/makefile/gen/lib/android_arm64-v8a/libtensorflow-core.a
+#./tensorflow/contrib/makefile/downloads/nsync/builds/default.linux.c++11/libnsync.a
+
+cmake_minimum_required(VERSION 3.5.1)
+set(CMAKE_GENERATOR_TOOLSET clang-5.0)
+set(CMAKE_SYSTEM_NAME Android)
+
+SET(TF_DIR /home/alok/DATA-WS/tensorflow-prebuilt/tensorflow-android-static)
+
+
+SET(TENSORFLOW_MAKEFILE_DIR ${TF_DIR}/tensorflow/contrib/makefile)
+
+SET(NSYNC_LIB ${TENSORFLOW_MAKEFILE_DIR}/downloads/nsync/builds/arm64-v8a.android.c++11/nsync.a)
+SET(PROTOBUF_LIB ${TENSORFLOW_MAKEFILE_DIR}/gen/protobuf_android/arm64-v8a/lib/libprotobuf.a)
+SET(TENSORFLOW_CORE_LIB -Wl,--whole-archive ${TF_DIR}/tensorflow/contrib/makefile/gen/lib/android_arm64-v8a/libtensorflow-core.a -Wl,--no-whole-archive)
+
+
+INCLUDE_DIRECTORIES(${TF_DIR})
+INCLUDE_DIRECTORIES(${TF_DIR}/tensorflow/contrib/makefile/gen/proto)
+INCLUDE_DIRECTORIES(${TF_DIR}/tensorflow/contrib/makefile/downloads/eigen)
+INCLUDE_DIRECTORIES(${TF_DIR}/tensorflow/contrib/makefile/downloads/absl)
+INCLUDE_DIRECTORIES(${TF_DIR}/tensorflow/contrib/makefile/downloads/nsync/public)
+INCLUDE_DIRECTORIES(${TF_DIR}/tensorflow/contrib/makefile/gen/protobuf/include)
+
+
+#INCLUDE_DIRECTORIES(${TF_DIR})
+#INCLUDE_DIRECTORIES(${TF_DIR}/tensorflow/contrib/makefile/gen/proto)
+#INCLUDE_DIRECTORIES(${TF_DIR}/tensorflow/contrib/makefile/downloads/eigen)
+#INCLUDE_DIRECTORIES(${TF_DIR}/tensorflow/contrib/makefile/downloads/absl)
+#INCLUDE_DIRECTORIES(${TF_DIR}/tensorflow/contrib/makefile/downloads/nsync/public)
+#INCLUDE_DIRECTORIES(${TF_DIR}/tensorflow/contrib/makefile/gen/protobuf/include)
+
+SET(TF_LIBRARIES
+    ${TENSORFLOW_CORE_LIB}
+    ${NSYNC_LIB}
+    ${PROTOBUF_LIB}
+    #pthread
+    log
+    dl
+)
+
+set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")
+set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "")
+
+#SET(LDFLAGS "-std=c++11 -O3 -Wall ")
+#SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}${LDFLAGS}")
+#TARGET_LINK_LIBRARIES(hello-tf-inference ${TF_LIBRARIES} ${CMAKE_CXX_FLAGS})
+#set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+#add_definitions(-D_GLIBCXX_USE_CXX11_ABI=0)
+
+add_subdirectory(lpcnet)
+add_executable(lpctron_cc src/main.cc)
+
+
+
+#set (CMAKE_C_FLAGS "-std=c++11 -Wall -W -Wextra -fomit-frame-pointer -Wno-unused-function   -march=armv8-a  -O3")
+#set (CMAKE_CXX_FLAGS "-std=c++11 -Wall -W -Wextra -fomit-frame-pointer -Wno-unused-function  -march=armv8-a  -O3")
+
+set (CMAKE_C_FLAGS "-std=c++11 -Wall -W -Wextra -fomit-frame-pointer -Wno-unused-function   -march=armv8-a -mtune=cortex-a53  -O3")
+set (CMAKE_CXX_FLAGS "-std=c++11 -Wall -W -Wextra -fomit-frame-pointer -Wno-unused-function   -march=armv8-a -mtune=cortex-a53   -O3")
+
+
+target_link_libraries(lpctron_cc 
+  ${TF_LIBRARIES}
+  lpcnet)
+
+
+target_include_directories(lpctron_cc PRIVATE 
+${TF_DIR}
+${TF_DIR}/tensorflow/contrib/makefile/gen/proto
+${TF_DIR}/tensorflow/contrib/makefile/downloads/eigen
+${TF_DIR}/tensorflow/contrib/makefile/downloads/absl
+${TF_DIR}/tensorflow/contrib/makefile/downloads/nsync/public
+${TF_DIR}/tensorflow/contrib/makefile/gen/protobuf/include
+${TF_DIR}/tensorflow/contrib/makefile/gen/protobuf_android/arm64-v8a/include
+)
+

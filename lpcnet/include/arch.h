@@ -37,7 +37,8 @@
 #include "opus_types.h"
 #include "common.h"
 
-//#define FLOAT_APPROX 1 
+
+#define FLOAT_APPROX 1 
 
 # if !defined(__GNUC_PREREQ)
 #  if defined(__GNUC__)&&defined(__GNUC_MINOR__)
@@ -146,7 +147,7 @@ static OPUS_INLINE opus_int16 SAT16(opus_int32 x) {
 #elif defined (TI_C6X_ASM)
 #include "fixed_c6x.h"
 #endif
-
+#include "arm/fixed_arm64.h"
 #endif
 
 #else /* FIXED_POINT */

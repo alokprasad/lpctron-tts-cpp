@@ -6,8 +6,8 @@
 // #include "tensorflow/core/platform/types.h"
 
 #include "tensorflow/cc/framework/scope.h"
-#include "tensorflow/cc/ops/standard_ops.h"
-#include "tensorflow/cc/training/coordinator.h"
+//#include "tensorflow/cc/ops/standard_ops.h"
+//#include "tensorflow/cc/training/coordinator.h"
 #include "tensorflow/core/framework/graph.pb.h"
 #include "tensorflow/core/framework/tensor.h"
 #include "tensorflow/core/framework/tensor_shape.h"
@@ -31,8 +31,8 @@ extern "C" {
 }
 
 static clock_t start, end, mid; 
-static tensorflow::Tensor input_lengths_t(tensorflow::DT_INT32, tensorflow::TensorShape({1}));
-static auto flat_input_lengths = input_lengths_t.flat<int>();
+//static tensorflow::Tensor input_lengths_t(tensorflow::DT_INT32, tensorflow::TensorShape({1}));
+//static auto flat_input_lengths = input_lengths_t.flat<int>();
 static std::vector<std::pair<std::string, tensorflow::Tensor>> inputs;
 static tensorflow::Session *session;
 
@@ -88,7 +88,9 @@ int init_lpctron() {
 int tts_lpctron(const std::string& text, void (*pcm_callback)(short *pcm, int pcm_size)) {
     std::vector<int> seq_inputs;
 	start = std::clock();         
-    
+
+	static tensorflow::Tensor input_lengths_t(tensorflow::DT_INT32, tensorflow::TensorShape({1}));
+	static auto flat_input_lengths = input_lengths_t.flat<int>(); 
     for(const char& c : text) {
         if (char2seq.find(c) != char2seq.end()) {
             seq_inputs.push_back(char2seq.at(c));
