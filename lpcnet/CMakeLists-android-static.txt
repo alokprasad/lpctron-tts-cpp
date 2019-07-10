@@ -10,21 +10,21 @@ add_library(lpcnet STATIC
   src/pitch.c
   src/celt_lpc.c)
 
+include_directories(${ANDROID_SYSROOT}/usr/include/aarch64-linux-android)
 
 target_include_directories(lpcnet 
 PRIVATE include interface
 INTERFACE interface)
 
-#set (CMAKE_C_FLAGS "-Wall -W -Wextra -fomit-frame-pointer -Wno-unused-function -ffast-math  -march=armv8-a -mtune=cortex-a53  -O3 -DTACOTRON2")
-#set (CMAKE_CXX_FLAGS "-Wall -W -Wextra -fomit-frame-pointer -Wno-unused-function -ffast-math  -march=armv8-a -mtune=cortex-a53  -O3 -DTACOTRON2")
+set (CMAKE_C_FLAGS " ")
+set (CMAKE_CXX_FLAGS " ")
 
-set (CMAKE_C_FLAGS "-Wall -W -Wextra -fomit-frame-pointer -Wno-unused-function -ffast-math  -march=armv8-a -mtune=cortex-a53  -O3 -DTACOTRON2 -finline-functions")
-set (CMAKE_CXX_FLAGS "-Wall -W -Wextra -fomit-frame-pointer -Wno-unused-function -ffast-math  -march=armv8-a -mtune=cortex-a53  -O3 -DTACOTRON2 -finline-functions")
 
-#set (CMAKE_CXX_FLAGS "-Wall -W -Wextra -Wno-unused-function  -mavx2 -mfma  -O3 -DTACOTRON2")
-#set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
-#add_definitions(-D_GLIBCXX_USE_CXX11_ABI=0)
-#add_definitions(-D__ARM_NEON__)
+
+set (CMAKE_C_FLAGS " -Wall  -Wextra -fvectorize  -fomit-frame-pointer -Wno-unused-function  -march=armv8-a  -DTACOTRON2 -Ofast -ffast-math ")
+set (CMAKE_CXX_FLAGS " -Wall  -Wextra -fvectorize  -fomit-frame-pointer -Wno-unused-function  -march=armv8-a  -DTACOTRON2 -Ofast -ffast-math ")
+add_definitions(-D__ANDROID__)
+add_definitions(-D__ARM_NEON__)
 
 target_compile_definitions(lpcnet PRIVATE TACOTRON2)
 
