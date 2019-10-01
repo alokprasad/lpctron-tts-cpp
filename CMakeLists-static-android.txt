@@ -10,8 +10,8 @@ cmake_minimum_required(VERSION 3.5.1)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-SET(TF_DIR /home/alok/DATA-WS/tensorflow-prebuilt/tensorflow-android-static)
-
+#SET(TF_DIR /home/alok/DATA-WS/tensorflow-prebuilt/tensorflow-android-static)
+SET(TF_DIR /home/alok/DATA-WS/tensorflow-prebuilt/tensorflow-1.14-static-android)
 
 SET(TENSORFLOW_MAKEFILE_DIR ${TF_DIR}/tensorflow/contrib/makefile)
 
@@ -37,8 +37,9 @@ SET(TF_LIBRARIES
 )
 
 
+SET(LDFLAGS "-std=c++11 -fPIC -O3 -march=native -Wall -finline-functions")
 set (CMAKE_C_FLAGS "-Wall  -Wextra -fvectorize  -fomit-frame-pointer -Wno-unused-function  -march=armv8-a  -DTACOTRON2 -Ofast -ffast-math ")
-set (CMAKE_CXX_FLAGS "-Wall  -Wextra -fvectorize  -fomit-frame-pointer -Wno-unused-function  -march=armv8-a  -DTACOTRON2 -Ofast -ffast-math ")
+set (CMAKE_CXX_FLAGS "-Wall  -Wextra -fvectorize -std=c++11 -fomit-frame-pointer -Wno-unused-function  -march=armv8-a  -DTACOTRON2 -Ofast -ffast-math ")
 add_definitions(-D__ANDROID__)
 add_definitions(-D__ARM_NEON__)
 

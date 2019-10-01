@@ -1,6 +1,8 @@
 #include <iostream>
 #include "tensorflow/core/public/session.h"
 #include "tensorflow/core/platform/env.h"
+#include "tensorflow/core/util/memmapped_file_system.h"
+#include "tensorflow/core/util/memmapped_file_system.pb.h"
 // #include "tensorflow/data_flow_ops.h"
 // #include "tensorflow/core/kernels/fifo_queue.h"
 // #include "tensorflow/core/platform/types.h"
@@ -26,10 +28,13 @@
 #include <map>
 #include <chrono> 
 #include <iomanip>
+#include <memory>
+
 extern "C" {
 #include "lpcnet_interface.h"
 }
 
+#define CREATE_F32_FILE false
 static clock_t start, end, mid; 
 //static tensorflow::Tensor input_lengths_t(tensorflow::DT_INT32, tensorflow::TensorShape({1}));
 //static auto flat_input_lengths = input_lengths_t.flat<int>();
@@ -40,10 +45,43 @@ static std::map<char, int> char2seq =  {
 {'_', 0},{'~', 1},{'A', 2},{'B', 3},{'C', 4},{'D', 5},{'E', 6},{'F', 7},{'G', 8},{'H', 9},{'I', 10},{'J', 11},{'K', 12},{'L', 13},{'M', 14},{'N', 15},{'O', 16},{'P', 17},{'Q', 18},{'R', 19},{'S', 20},{'T', 21},{'U', 22},{'V', 23},{'W', 24},{'X', 25},{'Y', 26},{'Z', 27},{'a', 28},{'b', 29},{'c', 30},{'d', 31},{'e', 32},{'f', 33},{'g', 34},{'h', 35},{'i', 36},{'j', 37},{'k', 38},{'l', 39},{'m', 40},{'n', 41},{'o', 42},{'p', 43},{'q', 44},{'r', 45},{'s', 46},{'t', 47},{'u', 48},{'v', 49},{'w', 50},{'x', 51},{'y', 52},{'z', 53},{'!', 54},{'\'',55},{'(', 56},{')', 57},{',', 58},{'-', 59},{'.', 60},{':', 61},{';', 62},{'?', 63},{' ', 64}
 };
 
-int init_lpctron() {
+
+
+int init_lpctron(char *argv) {
     tensorflow::GraphDef graph_def;
     std::cout << "Loading model..." << std::endl;
-    tensorflow::Status status = tensorflow::ReadBinaryProto(tensorflow::Env::Default(), "../model/inference_model.pb", &graph_def);
+
+
+    tensorflow::Status status;
+    tensorflow::MemmappedEnv* mmap_env_;
+    tensorflow::SessionOptions options;
+
+
+    mmap_env_ = new tensorflow::MemmappedEnv(tensorflow::Env::Default());
+
+    bool is_mmap = std::string(argv).find(".pbmm") != std::string::npos;
+    if (!is_mmap) {
+        std::cerr << "Warning: reading entire model file into memory. Transform model file into an mmapped graph to reduce heap usage." << std::endl;
+    } else {
+
+        /* Procedure to convert protobuf model to memory mapped model 
+        bazel build tensorflow/contrib/util:convert_graphdef_memmapped_format
+        bazel-bin/tensorflow/contrib/util/convert_graphdef_memmapped_format --in_graph=inference_model.pb --out_graph=inference_model.pbmm
+        */
+
+        status = mmap_env_->InitializeFromFile(argv);
+        if (!status.ok()) {
+            std::cerr << status << std::endl;
+            return -1;
+        }
+
+        options.config.mutable_graph_options()
+            ->mutable_optimizer_options()
+            ->set_opt_level(tensorflow::OptimizerOptions::L0);
+        options.env = mmap_env_;
+    }
+
+    
     if (!status.ok())
     {
         std::cout << status.ToString() << std::endl;
@@ -53,20 +91,26 @@ int init_lpctron() {
 
     std::cout << "Creating session" << std::endl;
 
-    tensorflow::SessionOptions options;
     tensorflow::ConfigProto & config = options.config;
-        config.set_inter_op_parallelism_threads(1);
-        config.set_intra_op_parallelism_threads(1);
-        config.set_use_per_session_threads(true);
-  
-    // now create a session to make the change
-    /*std::unique_ptr<tensorflow::Session> 
-        session(tensorflow::NewSession(options));
-    session->Close();
-    */
+    config.set_inter_op_parallelism_threads(1);
+    config.set_intra_op_parallelism_threads(1);
+    config.set_use_per_session_threads(true);
 
     status = tensorflow::NewSession(options, &session);
-   // status = tensorflow::NewSession(tensorflow::SessionOptions(), &session);
+
+
+    if (is_mmap) {
+        status = ReadBinaryProto(mmap_env_,
+                tensorflow::MemmappedFileSystem::kMemmappedPackageDefaultGraphDef,
+                &graph_def);
+
+        std::cout << "Mmaping the model file" << std::endl;
+    } else {
+        status = tensorflow::ReadBinaryProto(tensorflow::Env::Default(), argv, &graph_def);
+        std::cout << "Loading PB Memory " << std::endl;
+    }
+
+
     if (!status.ok())
     {
         std::cout << status.ToString() << "\n";
@@ -145,13 +189,14 @@ int tts_lpctron(const std::string& text, void (*pcm_callback)(short *pcm, int pc
                     }
                 }
             }
-            /*
+            
+#if CREATE_F32_FILE
             std::ofstream data_file;      // pay attention here! ofstream
             data_file.open("inference_model_cpp.f32", std::ios::out | std::ios::binary);
             data_file.write(reinterpret_cast<char*>(&mels_data[0]), mels_data.size()*sizeof(float)); 
             data_file.close();
-        
-            
+#endif        
+            /* 
             float *features = new float[mels_data.size()];
             for (int i = 0; i < mels_data.size(); i++) {
                 features[i] = mels_data[i];
@@ -162,9 +207,13 @@ int tts_lpctron(const std::string& text, void (*pcm_callback)(short *pcm, int pc
 			std::cout << "Time taken by program Tactron2 : " << std::fixed
 					<< time_mid << std::setprecision(5);
 			std::cout << " sec " << std::endl;
-
-
+			
+            std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
             run_lpcnet(reinterpret_cast<float*>(&mels_data[0]), mels_data.size(), pcm_callback);
+            std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+            std::cout << "LPCnet took- "
+                    << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count()
+                    << "us.\n";
 
             //delete[] features;
             return 0;
@@ -214,10 +263,10 @@ int main(int argc, char *argv[])
     #if true
 
 	if(argc < 2) {
-			std::cout << "usage program <text_file>"<<std::endl;
+			std::cout << "usage program <model> <text_file>"<<std::endl;
 			return 1;
 	}
-    if (init_lpctron() == 0) {
+    if (init_lpctron(argv[1]) == 0) {
         
         #if USE_C_STYLE_FILE_WRITE
         pcm_file = fopen("output.pcm", "wb");
@@ -225,7 +274,7 @@ int main(int argc, char *argv[])
         pcm_file.open("output.pcm", std::ios::binary);
         #endif
 
-        std::ifstream textfile (argv[1]);
+        std::ifstream textfile (argv[2]);
         std::string str((std::istreambuf_iterator<char>(textfile)),
                     std::istreambuf_iterator<char>());
         if (tts_lpctron(str, &callback) != 0) {

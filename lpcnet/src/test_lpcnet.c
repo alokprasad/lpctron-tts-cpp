@@ -23,9 +23,15 @@
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
+#ifdef ANDROID
+#warning BUILDING FOR ANDROID
+#endif
+
 
 #include <math.h>
+#ifndef ANDROID
 #include <stdio.h>
+#endif
 #include "arch.h"
 #include "lpcnet.h"
 #include "freq.h"
